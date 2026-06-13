@@ -1,0 +1,95 @@
+# FEATURES.md
+
+# Traki Features
+
+# Mobile App Features
+
+## Session Tracking
+Workers can:
+- Start jobs
+- End jobs
+- Automatically send GPS logs
+
+---
+
+## GPS Pinging
+Location updates are automatically sent at fixed intervals.
+
+Default interval:
+Duration(minutes: 2)
+
+---
+
+## Foreground Tracking Support
+The app supports:
+- Foreground service behavior
+- Wake-lock behavior
+- Reduced OS sleep interruptions
+
+Note:
+Some Android OEM manufacturers may still aggressively stop background processes.
+
+---
+
+## Dark Mode UI
+Included dark mode support for:
+- Mobile app
+- Dashboard
+
+---
+
+# Dashboard Features
+
+## Route Visualization
+Routes are displayed using Leaflet.js and OpenStreetMap.
+
+---
+
+## Route Markers
+- Green marker = start location
+- Red marker = end location
+
+---
+
+## Live Refresh
+Dashboard auto-refreshes every 30 seconds.
+
+---
+
+## Export Tools
+Included:
+- CSV export
+- PDF export
+
+---
+
+## Responsive Layout
+Dashboard works on:
+- Desktop
+- Tablets
+- Mobile browsers
+
+---
+
+# Backend Features
+
+## GPS Anomaly Filtering
+Suspicious GPS jumps are automatically ignored.
+
+---
+
+## Speed Protection
+Unrealistic movement speeds are rejected.
+
+---
+
+## SQLite Optimization
+Indexes included for:
+- Workers
+- Logs
+- Timestamps
+
+---
+
+## Rate Limiting
+Basic anti-spam protection included using Express Rate Limit.

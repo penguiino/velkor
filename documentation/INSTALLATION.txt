@@ -1,0 +1,95 @@
+# Installation Guide
+
+## 1. Extract Files
+
+Unzip the package.
+
+You should have:
+
+- mobile_app/
+- server/
+- documentation/
+
+---
+
+# 2. Backend Setup
+
+Open terminal:
+
+cd server
+
+Install dependencies:
+
+npm install
+
+Start server:
+
+node server.js
+
+Server runs on:
+
+http://localhost:8000
+
+---
+
+# 3. Dashboard
+
+Open browser:
+
+http://localhost:8000
+
+Dashboard loads automatically.
+
+---
+
+# 4. Flutter Mobile App
+
+Open:
+
+mobile_app/
+
+Run:
+
+flutter pub get
+
+---
+
+# 5. Configure API URL
+
+Open:
+
+lib/core/config/app_config.dart
+
+Update:
+
+static const String baseUrl =
+'http://YOUR_SERVER_IP:8000';
+
+Example:
+
+'http://192.168.1.10:8000'
+
+**IMPORTANT FOR MOBILE DEVICES
+
+Modern Android and iOS versions may block insecure HTTP traffic by default.
+
+For local testing:
+
+Ensure phone and server are on same Wi-Fi network
+Use local IP address
+
+For production deployment:
+
+HTTPS is strongly recommended
+
+Example:
+
+https://yourdomain.com
+
+---
+
+# 6. Run App
+
+flutter run
+
+Done.

@@ -1,0 +1,106 @@
+# Frequently Asked Questions
+
+# Does this include authentication?
+
+No.
+
+Authentication is intentionally omitted to keep the architecture lightweight and framework-agnostic.
+
+You can easily integrate:
+- JWT
+- Firebase Auth
+- OAuth
+- Session login systems
+
+---
+
+# Does this use Google Maps?
+
+No.
+
+Traki uses:
+- Leaflet.js
+- OpenStreetMap
+
+No Google Maps API billing required.
+
+---
+
+# Does this require MySQL?
+
+No.
+
+SQLite is included by default.
+
+No external database setup required.
+
+---
+
+# Can I white-label this?
+
+Yes.
+
+You can:
+- Rename the app
+- Change colors
+- Modify branding
+- Resell customized deployments to clients
+
+according to your Envato license permissions.
+
+---
+
+# Does it support iOS?
+
+Flutter project structure supports iOS.
+
+However:
+- The project is primarily optimized and tested for Android
+- iOS background tracking limitations differ from Android
+
+---
+
+# Is this realtime tracking?
+
+The dashboard refreshes every 30 seconds.
+
+This provides near realtime monitoring without requiring WebSockets infrastructure.
+
+---
+
+# Can SQLite be replaced?
+
+Yes.
+
+The backend uses standard SQL logic and can be migrated to:
+- PostgreSQL
+- MySQL
+- MariaDB
+
+if needed.
+
+---
+
+# Can I deploy this on shared hosting?
+
+Node.js hosting support is required.
+
+Recommended:
+- VPS
+- Render
+- Railway
+- DigitalOcean
+
+---
+
+# Will background tracking work on all Android phones?
+
+Not always.
+
+Some manufacturers aggressively stop background processes:
+- Xiaomi
+- Huawei
+- Oppo
+- Vivo
+
+Foreground tracking support is included to reduce interruptions, but behavior depends on device battery policies.

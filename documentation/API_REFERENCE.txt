@@ -1,0 +1,91 @@
+# API Reference
+
+Base URL:
+
+http://SERVER_IP:8000
+
+---
+
+# Health Check
+
+GET /health
+
+Response:
+
+{
+  "ok": true
+}
+
+---
+
+# Start Job
+
+POST /start-job
+
+Body:
+
+{
+  "workerId": "worker_1",
+  "lat": 36.8,
+  "lng": 10.1
+}
+
+Response:
+
+{
+  "jobId": "abc123"
+}
+
+---
+
+# Job Ping
+
+POST /job-ping
+
+Body:
+
+{
+  "jobId": "abc123",
+  "lat": 36.8,
+  "lng": 10.1
+}
+
+---
+
+# End Job
+
+POST /end-job
+
+Body:
+
+{
+  "jobId": "abc123",
+  "lat": 36.8,
+  "lng": 10.1
+}
+
+---
+
+# Workers
+
+GET /workers
+
+---
+
+# Jobs
+
+GET /jobs
+
+GET /jobs?workerId=worker_1
+
+---
+
+# Job Logs
+
+GET /job/:id/logs
+
+---
+
+# Job Summary
+
+GET /job/:id/summary

@@ -1,0 +1,940 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+
+    <title>Traki Dashboard</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #0b1220;
+            color: #f3f4f6;
+            padding: 14px;
+            gap: 14px;
+        }
+
+        /* ---------------- SIDEBAR ---------------- */
+
+        #sidebar {
+            width: 360px;
+            overflow-y: auto;
+            padding: 18px;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 18px;
+        }
+
+        .card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* ---------------- TITLE ---------------- */
+
+        .dashboard-title {
+            margin-top: 0;
+            margin-bottom: 22px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+            .dashboard-title span {
+                color: #2563eb;
+            }
+
+        .dashboard-subtitle {
+            margin-top: -14px;
+            margin-bottom: 24px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        /* ---------------- TABLES ---------------- */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 12px;
+            padding: 10px;
+            background: #1f2937;
+            border-bottom: 1px solid #374151;
+        }
+
+        td {
+            font-size: 12px;
+            padding: 10px;
+            border-bottom: 1px solid #1f2937;
+        }
+
+        tr:hover {
+            background: #1f2937;
+            cursor: pointer;
+        }
+
+        .selected-row {
+            background: #1e3a8a !important;
+        }
+
+        /* ---------------- MAP ---------------- */
+
+        #map-wrapper {
+            flex: 1;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 18px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        /* ---------------- SUMMARY ---------------- */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .summary-item {
+            background: #1f2937;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* ---------------- STATUS ---------------- */
+
+        .status-active {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .status-ended {
+            color: #9ca3af;
+            font-weight: bold;
+        }
+
+        /* ---------------- EMPTY ---------------- */
+
+        .empty {
+            font-size: 12px;
+            color: #9ca3af;
+            padding: 10px 0;
+        }
+
+        /* ---------------- EXPORT BUTTONS ---------------- */
+
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .export-btn {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 11px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+            .export-btn:hover {
+                opacity: 0.9;
+            }
+
+        .csv-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .pdf-btn {
+            background: #008000;
+            color: white;
+        }
+
+        /* ---------------- MOBILE ---------------- */
+
+        @media (max-width: 900px) {
+
+            body {
+                flex-direction: column;
+                height: auto;
+            }
+
+            #sidebar {
+                width: 100%;
+            }
+
+            #map-wrapper {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+
+        <h1 class="dashboard-title">
+            <span>Traki</span> Dashboard
+        </h1>
+
+        <div class="dashboard-subtitle">
+            Job verification & route tracking
+        </div>
+
+        <!-- EMPLOYEES -->
+
+        <div class="card">
+
+            <h3>Employees</h3>
+
+            <table id="employeesTable"></table>
+
+        </div>
+
+        <!-- JOBS -->
+
+        <div class="card">
+
+            <h3>Jobs</h3>
+
+            <table id="jobsTable"></table>
+
+        </div>
+
+        <!-- LOGS -->
+
+        <div class="card">
+
+            <h3>Logs</h3>
+
+            <table id="logsTable"></table>
+
+        </div>
+
+        <!-- SUMMARY -->
+
+        <div class="card">
+
+            <h3>Summary</h3>
+
+            <div id="summary"></div>
+
+            <div class="export-actions">
+
+                <button class="export-btn csv-btn"
+                        onclick="exportCSV()">
+
+                    Export CSV
+                </button>
+
+                <button class="export-btn pdf-btn"
+                        onclick="exportPDF()">
+
+                    Export PDF
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="map-wrapper">
+        <div id="map"></div>
+    </div>
+
+    <script>
+
+        // ---------------- CONFIG ----------------
+
+        const BASE_URL =
+            window.location.origin;
+
+        let selectedLogs = [];
+        let selectedSummary = null;
+
+        // ---------------- MAP ----------------
+
+        const map =
+            L.map('map').setView([0, 0], 2);
+
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:
+                    '&copy; OpenStreetMap contributors',
+            }
+        ).addTo(map);
+
+        let currentPolyline = null;
+        let currentMarkers = [];
+
+        // ---------------- HELPERS ----------------
+
+        function formatDuration(ms) {
+
+            const minutes =
+                Math.floor(ms / 60000);
+
+            if (minutes < 60) {
+                return `${minutes} min`;
+            }
+
+            const hours =
+                Math.floor(minutes / 60);
+
+            const remaining =
+                minutes % 60;
+
+            return `${hours}h ${remaining}m`;
+        }
+
+        function clearRoute() {
+
+            if (currentPolyline) {
+                map.removeLayer(currentPolyline);
+            }
+
+            currentMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+
+            currentMarkers = [];
+        }
+
+        // ---------------- EXPORT CSV ----------------
+
+        function exportCSV() {
+
+            if (!selectedLogs.length) {
+                alert('No logs selected');
+                return;
+            }
+
+            let csv =
+                'Time,Latitude,Longitude\n';
+
+            selectedLogs.forEach(log => {
+
+                csv +=
+                    `${new Date(
+                        log.timestamp
+                    ).toLocaleString()},${log.lat},${log.lng}\n`;
+            });
+
+            const blob =
+                new Blob([csv], {
+                    type: 'text/csv',
+                });
+
+            const url =
+                URL.createObjectURL(blob);
+
+            const a =
+                document.createElement('a');
+
+            a.href = url;
+            a.download = 'traki_logs.csv';
+
+            a.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        // ---------------- EXPORT PDF ----------------
+
+        function exportPDF() {
+
+            if (!selectedSummary) {
+                alert('No job selected');
+                return;
+            }
+
+            const {
+                jsPDF
+            } = window.jspdf;
+
+            const doc =
+                new jsPDF();
+
+            // HEADER
+
+            doc.setFontSize(22);
+            doc.text('TRAKI REPORT', 20, 25);
+
+            doc.setFontSize(11);
+            doc.setTextColor(120);
+
+            doc.text(
+                `Generated: ${new Date().toLocaleString()}`,
+                20,
+                34
+            );
+
+            // BOX
+
+            doc.setDrawColor(220);
+
+            doc.roundedRect(
+                15,
+                45,
+                180,
+                70,
+                4,
+                4
+            );
+
+            doc.setFontSize(14);
+            doc.setTextColor(0);
+
+            doc.text('Job Summary', 20, 58);
+
+            doc.setFontSize(12);
+
+            doc.text(
+                `Worker ID: ${selectedSummary.workerId}`,
+                20,
+                72
+            );
+
+            doc.text(
+                `Pings: ${selectedSummary.pingCount}`,
+                20,
+                84
+            );
+
+            doc.text(
+                `Duration: ${formatDuration(
+                    selectedSummary.durationMs
+                )}`,
+                20,
+                96
+            );
+
+            doc.text(
+                `Distance: ${(
+                    selectedSummary.totalDistanceMeters / 1000
+                ).toFixed(2)} km`,
+                20,
+                108
+            );
+
+            // LOGS
+
+            doc.setFontSize(14);
+
+            doc.text(
+                'Location Logs',
+                20,
+                132
+            );
+
+            let y = 145;
+
+            doc.setFontSize(10);
+
+            selectedLogs.forEach((log, index) => {
+
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+
+                const line =
+                    `${index + 1}. ` +
+                    `${new Date(
+                        log.timestamp
+                    ).toLocaleTimeString()} | ` +
+                    `${log.lat.toFixed(5)}, ` +
+                    `${log.lng.toFixed(5)}`;
+
+                doc.text(line, 20, y);
+
+                y += 8;
+            });
+
+            doc.save('traki_report.pdf');
+        }
+
+        // ---------------- EMPLOYEES ----------------
+
+        async function loadEmployees() {
+
+            try {
+
+                const res =
+                    await fetch(`${BASE_URL}/workers`);
+
+                const workers =
+                    await res.json();
+
+                const table =
+                    document.getElementById(
+                        'employeesTable'
+                    );
+
+                table.innerHTML = `
+                    <tr>
+                        <th>Worker ID</th>
+                    </tr>
+                `;
+
+                if (!workers.length) {
+
+                    table.innerHTML += `
+                        <tr>
+                            <td class="empty">
+                                No workers found
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                workers.forEach(workerId => {
+
+                    const row =
+                        document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${workerId}</td>
+                    `;
+
+                    row.onclick = () => {
+
+                        document
+                            .querySelectorAll(
+                                '#employeesTable tr'
+                            )
+                            .forEach(r =>
+                                r.classList.remove(
+                                    'selected-row'
+                                )
+                            );
+
+                        row.classList.add(
+                            'selected-row'
+                        );
+
+                        loadWorkerJobs(workerId);
+                    };
+
+                    table.appendChild(row);
+                });
+
+            } catch (e) {
+
+                console.error(e);
+
+                alert(
+                    'Failed to load employees'
+                );
+            }
+        }
+
+        // ---------------- JOBS ----------------
+
+        async function loadWorkerJobs(workerId) {
+
+            try {
+
+                const res =
+                    await fetch(
+                        `${BASE_URL}/jobs?workerId=${workerId}`
+                    );
+
+                const jobs =
+                    await res.json();
+
+                const table =
+                    document.getElementById(
+                        'jobsTable'
+                    );
+
+                table.innerHTML = `
+                    <tr>
+                        <th>Status</th>
+                        <th>Started</th>
+                    </tr>
+                `;
+
+                if (!jobs.length) {
+
+                    table.innerHTML += `
+                        <tr>
+                            <td colspan="2" class="empty">
+                                No jobs found
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                jobs.forEach(job => {
+
+                    const row =
+                        document.createElement('tr');
+
+                    const isActive =
+                        !job.ended_at;
+
+                    row.innerHTML = `
+                        <td>
+                            <span class="${isActive
+                            ? 'status-active'
+                            : 'status-ended'
+                        }">
+
+                                ${isActive
+                            ? 'ACTIVE'
+                            : 'ENDED'
+                        }
+
+                            </span>
+                        </td>
+
+                        <td>
+                            ${new Date(
+                            job.started_at
+                        ).toLocaleString()}
+                        </td>
+                    `;
+
+                    row.onclick = () => {
+
+                        document
+                            .querySelectorAll(
+                                '#jobsTable tr'
+                            )
+                            .forEach(r =>
+                                r.classList.remove(
+                                    'selected-row'
+                                )
+                            );
+
+                        row.classList.add(
+                            'selected-row'
+                        );
+
+                        loadJob(job.id);
+                    };
+
+                    table.appendChild(row);
+                });
+
+            } catch (e) {
+
+                console.error(e);
+
+                alert(
+                    'Failed to load jobs'
+                );
+            }
+        }
+
+        // ---------------- JOB ----------------
+
+        async function loadJob(jobId) {
+
+            try {
+
+                const logsRes =
+                    await fetch(
+                        `${BASE_URL}/job/${jobId}/logs`
+                    );
+
+                const logs =
+                    await logsRes.json();
+
+                const summaryRes =
+                    await fetch(
+                        `${BASE_URL}/job/${jobId}/summary`
+                    );
+
+                const summary =
+                    await summaryRes.json();
+
+                selectedLogs = logs;
+                selectedSummary = summary;
+
+                drawRoute(logs);
+
+                populateLogsTable(logs);
+
+                renderSummary(summary);
+
+            } catch (e) {
+
+                console.error(e);
+
+                alert(
+                    'Failed to load job'
+                );
+            }
+        }
+
+        // ---------------- ROUTE ----------------
+
+        function drawRoute(logs) {
+
+            clearRoute();
+
+            if (!logs.length) {
+                return;
+            }
+
+            const latlngs =
+                logs.map(log => [
+                    log.lat,
+                    log.lng
+                ]);
+
+            currentPolyline =
+                L.polyline(
+                    latlngs,
+                    {
+                        weight: 5,
+                        color: '#3b82f6',
+                    }
+                ).addTo(map);
+
+            latlngs.forEach((coord, index) => {
+
+                let color = '#ffffff';
+                let radius = 5;
+
+                // START
+
+                if (index === 0) {
+                    color = '#22c55e';
+                    radius = 8;
+                }
+
+                // END
+
+                else if (
+                    index === latlngs.length - 1
+                ) {
+                    color = '#ef4444';
+                    radius = 8;
+                }
+
+                const marker =
+                    L.circleMarker(
+                        coord,
+                        {
+                            radius,
+                            color,
+                            fillColor: color,
+                            fillOpacity: 1,
+                            weight: 2,
+                        }
+                    ).addTo(map);
+
+                currentMarkers.push(marker);
+            });
+
+            map.fitBounds(latlngs, {
+                padding: [40, 40],
+            });
+        }
+
+        // ---------------- LOGS ----------------
+
+        function populateLogsTable(logs) {
+
+            const table =
+                document.getElementById(
+                    'logsTable'
+                );
+
+            table.innerHTML = `
+                <tr>
+                    <th>Time</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                </tr>
+            `;
+
+            if (!logs.length) {
+
+                table.innerHTML += `
+                    <tr>
+                        <td colspan="3" class="empty">
+                            No logs available
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+            logs.forEach(log => {
+
+                const row =
+                    document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>
+                        ${new Date(
+                    log.timestamp
+                ).toLocaleTimeString()}
+                    </td>
+
+                    <td>
+                        ${log.lat.toFixed(5)}
+                    </td>
+
+                    <td>
+                        ${log.lng.toFixed(5)}
+                    </td>
+                `;
+
+                table.appendChild(row);
+            });
+        }
+
+        // ---------------- SUMMARY ----------------
+
+        function renderSummary(summary) {
+
+            const el =
+                document.getElementById(
+                    'summary'
+                );
+
+            el.innerHTML = `
+                <div class="summary-grid">
+
+                    <div class="summary-item">
+                        <div class="summary-label">
+                            Worker
+                        </div>
+
+                        <div class="summary-value">
+                            ${summary.workerId}
+                        </div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">
+                            Pings
+                        </div>
+
+                        <div class="summary-value">
+                            ${summary.pingCount}
+                        </div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">
+                            Duration
+                        </div>
+
+                        <div class="summary-value">
+                            ${formatDuration(
+                summary.durationMs
+            )}
+                        </div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">
+                            Distance
+                        </div>
+
+                        <div class="summary-value">
+                            ${(
+                    summary.totalDistanceMeters / 1000
+                ).toFixed(2)} km
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        // ---------------- LIVE REFRESH ----------------
+
+        setInterval(() => {
+
+            loadEmployees();
+
+            if (
+                selectedSummary &&
+                selectedSummary.jobId
+            ) {
+                loadJob(
+                    selectedSummary.jobId
+                );
+            }
+
+        }, 30000);
+
+        // ---------------- INIT ----------------
+
+        loadEmployees();
+
+    </script>
+
+</body>
+</html>

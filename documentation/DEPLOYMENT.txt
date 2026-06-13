@@ -1,0 +1,67 @@
+# Deployment Guide
+
+## Recommended Architecture
+
+Android App
+↓
+Node.js API Server
+↓
+SQLite Database
+
+---
+
+# Recommended Hosting
+
+Small Teams:
+- Render
+- Railway
+
+Production:
+- Ubuntu VPS
+- DigitalOcean
+
+---
+
+# Reverse Proxy
+
+Recommended:
+Nginx
+
+Example:
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://localhost:8000;
+    }
+}
+
+---
+
+# HTTPS
+
+Recommended:
+Cloudflare or Certbot
+
+---
+
+# Production Tips
+
+- Use PM2
+- Enable HTTPS
+- Backup database.db
+- Restrict firewall ports
+- Use reverse proxy
+
+---
+
+# Scaling
+
+SQLite works well for:
+- Small businesses
+- Internal operations
+- Lightweight deployments
+
+For larger scaling:
+- PostgreSQL migration recommended

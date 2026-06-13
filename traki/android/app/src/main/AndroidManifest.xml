@@ -1,0 +1,69 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- LOCATION -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+
+    <!-- NETWORK -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- OPTIONAL: improves service restart reliability -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:name="${applicationName}"
+        android:label="traki"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="
+                orientation|
+                keyboardHidden|
+                keyboard|
+                screenSize|
+                smallestScreenSize|
+                locale|
+                layoutDirection|
+                fontScale|
+                screenLayout|
+                density|
+                uiMode">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+
+        <!-- AUTO RESTART AFTER REBOOT -->
+        <receiver
+            android:name="id.flutter.flutter_background_service.BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            tools:replace="android:exported">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
+    </application>
+
+</manifest>

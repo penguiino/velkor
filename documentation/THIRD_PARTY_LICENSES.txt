@@ -1,0 +1,9 @@
+This project uses open-source libraries:
+
+- Flutter
+- Express.js
+- SQLite3
+- Leaflet.js
+- OpenStreetMap tiles
+
+All libraries remain under their respective licenses.

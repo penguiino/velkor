@@ -1,0 +1,82 @@
+# Server Setup
+
+## Install Node.js
+
+Download:
+https://nodejs.org
+
+Recommended:
+Node.js 18+
+
+---
+
+# Install Dependencies
+
+Inside server folder:
+
+npm install
+
+---
+
+# Dependencies
+
+- express
+- cors
+- sqlite3
+- express-rate-limit
+
+---
+
+# Start Server
+
+node server.js
+
+---
+
+# Production Deployment
+
+Recommended hosts:
+- DigitalOcean
+- Render
+- Railway
+- VPS
+- Ubuntu server
+
+---
+
+# PM2 Process Manager
+
+Install:
+
+npm install -g pm2
+
+Run:
+
+pm2 start server.js --name traki
+
+Auto restart:
+
+pm2 save
+pm2 startup
+
+---
+
+# Port Configuration
+
+Default:
+
+8000
+
+Override:
+
+PORT=9000 node server.js
+
+---
+
+# Database
+
+SQLite database auto-creates:
+
+database.db
+
+No setup required.

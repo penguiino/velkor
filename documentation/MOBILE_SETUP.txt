@@ -1,0 +1,60 @@
+# Mobile App Setup
+
+## Requirements
+
+- Flutter SDK
+- Android Studio
+- Android SDK
+
+---
+
+# Install Packages
+
+flutter pub get
+
+---
+
+# Update API Endpoint
+
+File:
+
+lib/core/config/app_config.dart
+
+Update:
+
+baseUrl
+
+Example:
+
+http://192.168.1.10:8000
+
+---
+
+# Android Permissions
+
+Required:
+- Location permission
+- Internet permission
+
+Already configured.
+
+---
+
+# Build APK
+
+flutter build apk --release
+
+APK output:
+
+build/app/outputs/flutter-apk/
+
+---
+
+# Background Behavior
+
+The app supports:
+- Active session tracking
+- Screen awake mode
+- Sticky foreground behavior
+
+Android battery optimization settings may affect tracking reliability depending on device manufacturer.

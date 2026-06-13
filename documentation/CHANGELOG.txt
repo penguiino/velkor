@@ -1,0 +1,18 @@
+# Changelog
+
+# Version 1.0.0
+
+Initial release.
+
+## Included
+- Flutter mobile app
+- Node.js backend
+- SQLite database
+- Route dashboard
+- CSV export
+- PDF export
+- GPS anomaly filtering
+- Dark mode
+- Live dashboard refresh
+- Leaflet.js integration
+- Worker/job summaries
