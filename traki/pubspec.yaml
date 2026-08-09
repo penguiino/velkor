@@ -1,5 +1,5 @@
 name: traki
-description: MVP real-time location sharing sender
+description: Velkor field worker app - route-based visit tracking
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -28,6 +28,9 @@ dependencies:
 
   #wake lock
   wakelock_plus: ^1.2.5
+
+  # Open the device's maps app for turn-by-turn navigation to a stop
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

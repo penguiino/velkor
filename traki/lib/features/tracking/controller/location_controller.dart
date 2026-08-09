@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../../core/config/app_config.dart';
+import '../../../main.dart';
 import '../services/local_storage_service.dart';
 import '../repositories/location_repository_impl.dart';
 
@@ -41,24 +42,27 @@ class LocationState {
   }
 }
 
-class LocationController
-    extends StateNotifier<LocationState> {
+class LocationController extends Notifier<LocationState> {
 
-  final LocationRepositoryImpl repository;
-
-  final LocalStorageService localStorage;
+  late final LocationRepositoryImpl repository;
+  late final LocalStorageService localStorage;
 
   Timer? _pingTimer;
 
-  LocationController(
-      this.repository,
-      this.localStorage,
-      ) : super(
-    const LocationState(
-      status: LocationStatus.idle,
-    ),
-  ) {
+  @override
+  LocationState build() {
+    repository = ref.read(locationRepositoryProvider);
+    localStorage = ref.read(localStorageProvider);
+
     _init();
+
+    ref.onDispose(() {
+      _pingTimer?.cancel();
+    });
+
+    return const LocationState(
+      status: LocationStatus.idle,
+    );
   }
 
   // ---------------- INIT ----------------
@@ -166,13 +170,11 @@ class LocationController
         );
       }
 
-      final position =
-      await Geolocator
-          .getCurrentPosition(
-        desiredAccuracy:
-        LocationAccuracy.low,
-        timeLimit:
-        const Duration(seconds: 10),
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       final result =
@@ -231,13 +233,10 @@ class LocationController
 
         try {
 
-          final position =
-          await Geolocator
-              .getCurrentPosition(
-            desiredAccuracy:
-            LocationAccuracy.low,
-            timeLimit: const Duration(
-              seconds: 10,
+          final position = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.low,
+              timeLimit: Duration(seconds: 10),
             ),
           );
 
@@ -293,13 +292,11 @@ class LocationController
         );
       }
 
-      final position =
-      await Geolocator
-          .getCurrentPosition(
-        desiredAccuracy:
-        LocationAccuracy.low,
-        timeLimit:
-        const Duration(seconds: 10),
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       await repository.endJob(
@@ -335,15 +332,5 @@ class LocationController
 
       rethrow;
     }
-  }
-
-  // ---------------- DISPOSE ----------------
-
-  @override
-  void dispose() {
-
-    _pingTimer?.cancel();
-
-    super.dispose();
   }
 }

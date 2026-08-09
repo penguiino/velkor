@@ -4,32 +4,52 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/config/app_config.dart';
 import 'core/network/http_service.dart';
 
-import 'features/tracking/controller/location_controller.dart';
-import 'features/tracking/repositories/location_repository_impl.dart';
-import 'features/tracking/services/local_storage_service.dart';
-import 'features/tracking/ui/location_sharing_page.dart';
+import 'features/auth/controller/auth_controller.dart';
+import 'features/auth/repositories/auth_repository.dart';
+import 'features/auth/services/auth_storage_service.dart';
+import 'features/auth/ui/login_page.dart';
+
+import 'features/route/controller/route_controller.dart';
+import 'features/route/repositories/route_repository.dart';
+import 'features/route/ui/route_page.dart';
+
+// ---------------- CORE ----------------
+
+final httpServiceProvider = Provider<HttpService>((ref) {
+  return HttpService(AppConfig.baseUrl);
+});
+
+// ---------------- AUTH ----------------
+
+final authStorageProvider = Provider<AuthStorageService>((ref) {
+  return AuthStorageService();
+});
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepository(ref.read(httpServiceProvider));
+});
+
+final authControllerProvider = NotifierProvider<AuthController, AuthState>(
+  AuthController.new,
+);
+
+// ---------------- ROUTE ----------------
+
+final routeRepositoryProvider = Provider<RouteRepository>((ref) {
+  return RouteRepository(ref.read(httpServiceProvider));
+});
+
+final routeControllerProvider =
+NotifierProvider<RouteController, RouteControllerState>(
+  RouteController.new,
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
-  final httpService =
-  HttpService(AppConfig.baseUrl);
-
-  final locationRepo =
-  LocationRepositoryImpl(httpService);
-
-  final storage = LocalStorageService();
-
   runApp(
-    ProviderScope(
-      overrides: [
-        locationControllerProvider.overrideWith(
-              (ref) =>
-              LocationController(locationRepo, storage),
-        ),
-      ],
-      child: const MyApp(),
+    const ProviderScope(
+      child: MyApp(),
     ),
   );
 }
@@ -78,7 +98,34 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      home: const LocationSharingPage(),
+      home: const AuthGate(),
     );
+  }
+}
+
+/// Shows the login screen until a worker session exists, then shows
+/// today's route. This is the only place that switches between the two
+/// -- RoutePage and LoginPage don't need to know about each other.
+class AuthGate extends ConsumerWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+
+    switch (authState.status) {
+      case AuthStatus.checking:
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+
+      case AuthStatus.loggedIn:
+        return const RoutePage();
+
+      case AuthStatus.loggedOut:
+      case AuthStatus.loading:
+      case AuthStatus.error:
+        return const LoginPage();
+    }
   }
 }

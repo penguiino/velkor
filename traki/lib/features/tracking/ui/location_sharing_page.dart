@@ -6,10 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controller/location_controller.dart';
 
 final locationControllerProvider =
-StateNotifierProvider<
-    LocationController,
-    LocationState>(
-      (ref) => throw UnimplementedError(),
+NotifierProvider<LocationController, LocationState>(
+  LocationController.new,
 );
 
 class LocationSharingPage

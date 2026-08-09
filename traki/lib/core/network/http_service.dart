@@ -1,6 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+/// Thrown for any non-2xx response. Carries the HTTP status code so
+/// callers can react to specific cases (e.g. 401 -> force re-login)
+/// without string-matching an error message.
+class ApiException implements Exception {
+  final int statusCode;
+  final String message;
+
+  ApiException(this.statusCode, this.message);
+
+  @override
+  String toString() => message;
+}
+
 class HttpService {
   final String baseUrl;
 
@@ -12,109 +25,91 @@ class HttpService {
     return Uri.parse('$baseUrl$path');
   }
 
+  Map<String, String> _headers(String? token) {
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
   Future<dynamic> _handleResponse(http.Response res) async {
+    dynamic decoded;
+
+    if (res.body.isNotEmpty) {
+      try {
+        decoded = jsonDecode(res.body);
+      } catch (_) {
+        decoded = null;
+      }
+    }
+
     if (res.statusCode >= 400) {
-      throw Exception(
-        'HTTP ${res.statusCode}: ${res.body.isEmpty ? "Unknown error" : res.body}',
-      );
+      final message = (decoded is Map && decoded['error'] is String)
+          ? decoded['error'] as String
+          : 'HTTP ${res.statusCode}';
+
+      throw ApiException(res.statusCode, message);
     }
 
-    if (res.body.isEmpty) {
-      return null;
-    }
-
-    try {
-      return jsonDecode(res.body);
-    } catch (_) {
-      throw Exception('Invalid JSON response');
-    }
+    return decoded;
   }
 
   Future<Map<String, dynamic>> post(
       String path,
-      Map<String, dynamic> body,
-      ) async {
-    try {
-      final res = await http
-          .post(
-        _buildUri(path),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      )
-          .timeout(_timeout);
+      Map<String, dynamic> body, {
+        String? token,
+      }) async {
+    final res = await http
+        .post(
+      _buildUri(path),
+      headers: _headers(token),
+      body: jsonEncode(body),
+    )
+        .timeout(_timeout);
 
-      final decoded = await _handleResponse(res);
+    final decoded = await _handleResponse(res);
 
-      if (decoded == null) {
-        return {};
-      }
+    if (decoded == null) return {};
+    if (decoded is Map<String, dynamic>) return decoded;
+    if (decoded is List) return {'items': decoded};
 
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-
-      if (decoded is List) {
-        return {'services': decoded};
-      }
-
-      throw Exception('Unexpected response format');
-    } catch (e) {
-      throw Exception('POST $path failed: $e');
-    }
+    throw Exception('Unexpected response format');
   }
 
-  Future<Map<String, dynamic>> get(String path) async {
-    try {
-      final res = await http
-          .get(_buildUri(path))
-          .timeout(_timeout);
+  Future<Map<String, dynamic>> get(
+      String path, {
+        String? token,
+      }) async {
+    final res = await http
+        .get(_buildUri(path), headers: _headers(token))
+        .timeout(_timeout);
 
-      final decoded = await _handleResponse(res);
+    final decoded = await _handleResponse(res);
 
-      if (decoded == null) {
-        return {};
-      }
+    if (decoded == null) return {};
+    if (decoded is Map<String, dynamic>) return decoded;
+    if (decoded is List) return {'items': decoded};
 
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-
-      if (decoded is List) {
-        return {'services': decoded};
-      }
-
-      throw Exception('Unexpected response format');
-    } catch (e) {
-      throw Exception('GET $path failed: $e');
-    }
+    throw Exception('Unexpected response format');
   }
 
-  Future<List<dynamic>> getList(String path) async {
-    try {
-      final res = await http
-          .get(_buildUri(path))
-          .timeout(_timeout);
+  Future<List<dynamic>> getList(
+      String path, {
+        String? token,
+      }) async {
+    final res = await http
+        .get(_buildUri(path), headers: _headers(token))
+        .timeout(_timeout);
 
-      final decoded = await _handleResponse(res);
+    final decoded = await _handleResponse(res);
 
-      if (decoded == null) {
-        return [];
-      }
+    if (decoded == null) return [];
+    if (decoded is List) return decoded;
 
-      if (decoded is List) {
-        return decoded;
-      }
-
-      if (decoded is Map<String, dynamic> &&
-          decoded['services'] is List) {
-        return decoded['services'];
-      }
-
-      throw Exception('Unexpected list response format');
-    } catch (e) {
-      throw Exception('GET LIST $path failed: $e');
+    if (decoded is Map<String, dynamic> && decoded['items'] is List) {
+      return decoded['items'];
     }
+
+    throw Exception('Unexpected list response format');
   }
 }
